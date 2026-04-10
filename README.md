@@ -17,19 +17,30 @@ This is the difference between asking ChatGPT a question and having an AI assist
 
 ### Tutorial Notebooks
 
+#### Foundations
 | Notebook | Framework | What You'll Build |
 |----------|-----------|-------------------|
-| [`langgraph_agents.ipynb`](langgraph_agents.ipynb) | **LangGraph** | Graph-based agents with full control over execution flow |
 | [`crewai_agents.ipynb`](crewai_agents.ipynb) | **CrewAI** | Role-based agent teams that collaborate like a real crew |
+| [`langgraph_agents.ipynb`](langgraph_agents.ipynb) | **LangGraph** | Graph-based agents with full control over execution flow |
 
-Both notebooks start simple and build up progressively — no prior agent experience needed.
+#### Advanced LangGraph Patterns
+| Notebook | Pattern | What You'll Build |
+|----------|---------|-------------------|
+| [`langgraph_multi_agent_supervisor.ipynb`](langgraph_multi_agent_supervisor.ipynb) | **Advanced Supervisor** | Customer support center with structured routing, scratchpad, and quality loops |
+| [`langgraph_hierarchical_teams.ipynb`](langgraph_hierarchical_teams.ipynb) | **Hierarchical Teams** | Startup due diligence system with sub-teams and subgraph composition |
+| [`langgraph_collaboration_patterns.ipynb`](langgraph_collaboration_patterns.ipynb) | **Collaboration** | Map-Reduce, Debate, and Voting patterns using the `Send()` API |
+| [`langgraph_custom_state_machines.ipynb`](langgraph_custom_state_machines.ipynb) | **State Machines** | Document processing pipeline with retry logic and error recovery |
+| [`langgraph_human_in_the_loop.ipynb`](langgraph_human_in_the_loop.ipynb) | **Human-in-the-Loop** | Content publishing pipeline with approval gates and collaborative editing |
+
+All notebooks use real OpenAI API calls and build progressively — no prior agent experience needed for the foundations.
 
 ### Companion Guides
 
-Detailed written walkthroughs for each framework live in the [`docs/`](docs/) folder:
+Detailed written walkthroughs live in the [`docs/`](docs/) folder:
 
 - [`docs/langgraph_guide.md`](docs/langgraph_guide.md) — LangGraph concepts, patterns, and code explained
 - [`docs/crewai_guide.md`](docs/crewai_guide.md) — CrewAI concepts, patterns, and code explained
+- [`docs/langgraph_advanced_patterns_guide.md`](docs/langgraph_advanced_patterns_guide.md) — Reference guide for all 5 advanced LangGraph patterns
 
 ## Prerequisites
 
@@ -67,9 +78,16 @@ No prior experience with AI agents, LangChain, or multi-agent systems is require
 
 If you're brand new to agents, here's the recommended order:
 
-1. **Start with CrewAI** (`crewai_agents.ipynb`) — it's higher-level and faster to get results. You'll build a working multi-agent team in minutes and understand the *why* behind agents.
+### Stage 1: Foundations
+1. **CrewAI** (`crewai_agents.ipynb`) — Higher-level, faster to get results. Understand the *why* behind agents.
+2. **LangGraph Basics** (`langgraph_agents.ipynb`) — Lower-level control. Understand *how* agents work: state machines, routing, tool loops.
 
-2. **Then try LangGraph** (`langgraph_agents.ipynb`) — it gives you lower-level control. You'll understand *how* agents work under the hood: state machines, conditional routing, and tool execution loops.
+### Stage 2: Advanced Multi-Agent Patterns (LangGraph)
+3. **Advanced Supervisor** (`langgraph_multi_agent_supervisor.ipynb`) — Structured routing with Pydantic, shared scratchpads, quality check loops.
+4. **Hierarchical Teams** (`langgraph_hierarchical_teams.ipynb`) — Teams of teams via subgraph composition when one supervisor isn't enough.
+5. **Collaboration Patterns** (`langgraph_collaboration_patterns.ipynb`) — Map-Reduce for parallel analysis, Debate for adversarial reasoning, Voting for group decisions.
+6. **Custom State Machines** (`langgraph_custom_state_machines.ipynb`) — Explicit lifecycle stages, multi-branch routing, retry/error recovery.
+7. **Human-in-the-Loop** (`langgraph_human_in_the_loop.ipynb`) — Approval gates, tool review, and collaborative human-AI editing.
 
 ## What Each Notebook Covers
 
