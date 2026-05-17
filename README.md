@@ -1,56 +1,109 @@
 # AI Agents — Learn to Build Intelligent Agent Systems
 
-Welcome! This repo is your hands-on guide to building **AI agents** — programs that can reason, use tools, and collaborate to accomplish complex tasks autonomously.
+A hands-on repo for learning **AI agents** — programs that reason, use tools, and collaborate to accomplish complex tasks autonomously. Organized as four progressive learning series, one per topic.
 
-## What Are AI Agents?
+## Repository layout
 
-Think of an AI agent as an LLM (like GPT-4) that can **do things**, not just answer questions. Instead of a single prompt-in, text-out interaction, an agent can:
+```
+.
+├── crewai/      Role-based agent teams (CrewAI)
+├── langgraph/   Graph-based agents and advanced multi-agent patterns
+├── mcp/         The Model Context Protocol from first principles
+└── a2a/         The Agent2Agent (A2A) protocol from first principles
+```
+
+Each folder is self-contained: notebooks build progressively from a "no-framework" baseline up to production-grade patterns, and a `docs/` subfolder (where applicable) holds longer-form guides.
+
+## What are AI agents?
+
+An AI agent is an LLM (like Claude or GPT-4) that can **do things**, not just answer questions:
 
 - **Reason** about what steps are needed to complete a task
 - **Use tools** — search the web, query databases, run calculations, call APIs
-- **Loop** — inspect tool results, decide if more work is needed, and keep going
-- **Collaborate** — work alongside other specialized agents in a team
+- **Loop** — inspect tool results, decide if more work is needed, keep going
+- **Collaborate** — work alongside other specialized agents
 
-This is the difference between asking ChatGPT a question and having an AI assistant that can actually research a topic, analyze data, and write a report — all on its own.
+This is the difference between asking a chatbot a question and having an assistant that researches a topic, analyzes data, and writes a report — all on its own.
 
-## What You'll Find in This Repo
+---
 
-### Tutorial Notebooks
+## crewai/ — Role-based teams
 
-#### Foundations
-| Notebook | Framework | What You'll Build |
-|----------|-----------|-------------------|
-| [`crewai_agents.ipynb`](crewai_agents.ipynb) | **CrewAI** | Role-based agent teams that collaborate like a real crew |
-| [`langgraph_agents.ipynb`](langgraph_agents.ipynb) | **LangGraph** | Graph-based agents with full control over execution flow |
+Higher-level framework. Define agents with roles, give them tasks, let them collaborate. Fast to get results.
 
-#### Advanced LangGraph Patterns
-| Notebook | Pattern | What You'll Build |
-|----------|---------|-------------------|
-| [`langgraph_multi_agent_supervisor.ipynb`](langgraph_multi_agent_supervisor.ipynb) | **Advanced Supervisor** | Customer support center with structured routing, scratchpad, and quality loops |
-| [`langgraph_hierarchical_teams.ipynb`](langgraph_hierarchical_teams.ipynb) | **Hierarchical Teams** | Startup due diligence system with sub-teams and subgraph composition |
-| [`langgraph_collaboration_patterns.ipynb`](langgraph_collaboration_patterns.ipynb) | **Collaboration** | Map-Reduce, Debate, and Voting patterns using the `Send()` API |
-| [`langgraph_custom_state_machines.ipynb`](langgraph_custom_state_machines.ipynb) | **State Machines** | Document processing pipeline with retry logic and error recovery |
-| [`langgraph_human_in_the_loop.ipynb`](langgraph_human_in_the_loop.ipynb) | **Human-in-the-Loop** | Content publishing pipeline with approval gates and collaborative editing |
+| Notebook | What you'll build |
+|---|---|
+| [`crewai/crewai_agents.ipynb`](crewai/crewai_agents.ipynb) | Sequential and hierarchical crews; agents with custom tools |
 
-All notebooks use real OpenAI API calls and build progressively — no prior agent experience needed for the foundations.
+Companion guide: [`crewai/docs/crewai_guide.md`](crewai/docs/crewai_guide.md).
 
-### Companion Guides
+---
 
-Detailed written walkthroughs live in the [`docs/`](docs/) folder:
+## langgraph/ — Graph-based agents
 
-- [`docs/langgraph_guide.md`](docs/langgraph_guide.md) — LangGraph concepts, patterns, and code explained
-- [`docs/crewai_guide.md`](docs/crewai_guide.md) — CrewAI concepts, patterns, and code explained
-- [`docs/langgraph_advanced_patterns_guide.md`](docs/langgraph_advanced_patterns_guide.md) — Reference guide for all 5 advanced LangGraph patterns
+Lower-level than CrewAI. You define a state machine; the framework runs it. Better for production systems with complex routing, retries, and human checkpoints.
+
+| Notebook | Pattern | What you'll build |
+|---|---|---|
+| [`langgraph/pre_langgraph_ai_agents_first_principles.ipynb`](langgraph/pre_langgraph_ai_agents_first_principles.ipynb) | **First principles** | The agent loop hand-built in pure Python before bringing in LangGraph |
+| [`langgraph/langgraph_agents.ipynb`](langgraph/langgraph_agents.ipynb) | **Foundations** | State, nodes, edges, tools; a ReAct agent; a Supervisor+Researcher+Writer team |
+| [`langgraph/langgraph_multi_agent_supervisor.ipynb`](langgraph/langgraph_multi_agent_supervisor.ipynb) | **Advanced Supervisor** | Customer support center with structured routing, scratchpad, quality loops |
+| [`langgraph/langgraph_hierarchical_teams.ipynb`](langgraph/langgraph_hierarchical_teams.ipynb) | **Hierarchical Teams** | Startup due diligence system with sub-teams and subgraph composition |
+| [`langgraph/langgraph_collaboration_patterns.ipynb`](langgraph/langgraph_collaboration_patterns.ipynb) | **Collaboration** | Map-Reduce, Debate, and Voting patterns using the `Send()` API |
+| [`langgraph/langgraph_custom_state_machines.ipynb`](langgraph/langgraph_custom_state_machines.ipynb) | **State Machines** | Document processing pipeline with retry logic and error recovery |
+| [`langgraph/langgraph_human_in_the_loop.ipynb`](langgraph/langgraph_human_in_the_loop.ipynb) | **Human-in-the-Loop** | Content publishing pipeline with approval gates and collaborative editing |
+
+Companion guides:
+- [`langgraph/docs/langgraph_guide.md`](langgraph/docs/langgraph_guide.md) — concepts, patterns, and code explained
+- [`langgraph/docs/langgraph_advanced_patterns_guide.md`](langgraph/docs/langgraph_advanced_patterns_guide.md) — reference for all five advanced patterns
+
+---
+
+## mcp/ — The Model Context Protocol
+
+A progressive series that teaches **MCP** — the standard for agent-to-tool communication — from the ground up. Each notebook builds on the previous one; the closing notebook ties everything together with a real LLM.
+
+| Notebook | What you'll learn |
+|---|---|
+| [`mcp/01_without_mcp.ipynb`](mcp/01_without_mcp.ipynb) | The pain of integrating tools without a shared protocol |
+| [`mcp/02_mcp_local_stdio.ipynb`](mcp/02_mcp_local_stdio.ipynb) | MCP over local stdio transport |
+| [`mcp/03_mcp_http_server.ipynb`](mcp/03_mcp_http_server.ipynb) | MCP over HTTP |
+| [`mcp/04_mcp_with_auth.ipynb`](mcp/04_mcp_with_auth.ipynb) | Adding authentication |
+| [`mcp/05_mcp_production_patterns.ipynb`](mcp/05_mcp_production_patterns.ipynb) | Production patterns and pitfalls |
+| [`mcp/06_mcp_prompt_injection_and_safety.ipynb`](mcp/06_mcp_prompt_injection_and_safety.ipynb) | Prompt injection and tool-use safety |
+| [`mcp/07_mcp_resources_and_prompts.ipynb`](mcp/07_mcp_resources_and_prompts.ipynb) | MCP resources and prompt templates |
+| [`mcp/08_real_llm_end_to_end.ipynb`](mcp/08_real_llm_end_to_end.ipynb) | The payoff: a real LLM driving MCP tools end-to-end |
+
+---
+
+## a2a/ — The Agent2Agent (A2A) protocol
+
+A progressive series that teaches **A2A** — the standard for agent-to-*agent* communication — from the ground up. Mirrors the MCP series' arc; closes with the official `a2a-sdk`.
+
+| Notebook | What you'll learn |
+|---|---|
+| [`a2a/01_without_a2a.ipynb`](a2a/01_without_a2a.ipynb) | The pain of hand-rolled REST integration between agents |
+| [`a2a/02_a2a_agent_card.ipynb`](a2a/02_a2a_agent_card.ipynb) | `/.well-known/agent-card.json` discovery |
+| [`a2a/03_a2a_first_task.ipynb`](a2a/03_a2a_first_task.ipynb) | JSON-RPC 2.0 envelope, `message/send`, and the wire format |
+| [`a2a/04_a2a_task_lifecycle.ipynb`](a2a/04_a2a_task_lifecycle.ipynb) | Task states, `tasks/get` polling, `tasks/cancel`, multi-turn `input-required` |
+| [`a2a/05_a2a_streaming.ipynb`](a2a/05_a2a_streaming.ipynb) | `message/stream` over Server-Sent Events |
+| [`a2a/06_a2a_push_notifications.ipynb`](a2a/06_a2a_push_notifications.ipynb) | `tasks/pushNotificationConfig/set` and webhook delivery |
+| [`a2a/07_a2a_auth.ipynb`](a2a/07_a2a_auth.ipynb) | Bearer tokens, OAuth2 client credentials, HMAC-signed webhooks |
+| [`a2a/08_a2a_multi_agent.ipynb`](a2a/08_a2a_multi_agent.ipynb) | The payoff: official `a2a-sdk` and multi-agent coordination |
+
+Series design + per-notebook implementation plans live under `docs/superpowers/` (the project-lifecycle docs folder).
+
+---
 
 ## Prerequisites
 
-- **Python 3.10+**
+- **Python 3.11+**
 - **Familiarity with LLM APIs** — you should know what a prompt, completion, and model are
-- **An OpenAI API key** — sign up at [platform.openai.com](https://platform.openai.com) if you don't have one
+- **An API key** — OpenAI for the CrewAI/LangGraph notebooks; either OpenAI or Anthropic for the MCP and A2A series finales (notebooks `08_*`). The MCP and A2A series 01–07 require no API keys.
 
-No prior experience with AI agents, LangChain, or multi-agent systems is required. The notebooks will teach you everything from scratch.
+No prior experience with AI agents, LangChain, MCP, or A2A is required — each series starts from "no framework" and builds up.
 
-## Quick Start
+## Quick start
 
 1. **Clone the repo**
    ```bash
@@ -58,68 +111,66 @@ No prior experience with AI agents, LangChain, or multi-agent systems is require
    cd AIAgents
    ```
 
-2. **Install dependencies** (each notebook handles this in its first cell, or you can install upfront)
+2. **Install dependencies for the series you want to work through**
    ```bash
-   pip install langgraph langchain langchain-openai langchain-community
-   pip install crewai 'crewai[tools]'
+   # CrewAI / LangGraph
+   pip install langgraph langchain langchain-openai langchain-community crewai 'crewai[tools]'
+
+   # MCP series
+   pip install mcp fastapi 'uvicorn[standard]' httpx
+
+   # A2A series
+   pip install fastapi 'uvicorn[standard]' httpx pydantic
+   # Notebook 08 only:
+   pip install 'a2a-sdk[http-server]==0.3.26'
    ```
 
-3. **Set your OpenAI API key**
+3. **Set your API key** (only needed for some notebooks)
    ```bash
    export OPENAI_API_KEY="your-key-here"
+   # or
+   export ANTHROPIC_API_KEY="your-key-here"
    ```
 
-4. **Open a notebook and start learning**
+4. **Open the first notebook of any series and start**
    ```bash
-   jupyter notebook langgraph_agents.ipynb
+   jupyter notebook langgraph/langgraph_agents.ipynb
+   # or
+   jupyter notebook mcp/01_without_mcp.ipynb
+   # or
+   jupyter notebook a2a/01_without_a2a.ipynb
    ```
 
-## Learning Path
+## Recommended learning paths
 
-If you're brand new to agents, here's the recommended order:
+**New to agents?** → start with `crewai/crewai_agents.ipynb` for a gentle, high-level intro, then move to `langgraph/langgraph_agents.ipynb` for the lower-level mental model.
 
-### Stage 1: Foundations
-1. **CrewAI** (`crewai_agents.ipynb`) — Higher-level, faster to get results. Understand the *why* behind agents.
-2. **LangGraph Basics** (`langgraph_agents.ipynb`) — Lower-level control. Understand *how* agents work: state machines, routing, tool loops.
+**Comfortable with LangChain-style agents, want depth?** → walk the `langgraph/` series 1–7 in order. The advanced patterns are where production systems live.
 
-### Stage 2: Advanced Multi-Agent Patterns (LangGraph)
-3. **Advanced Supervisor** (`langgraph_multi_agent_supervisor.ipynb`) — Structured routing with Pydantic, shared scratchpads, quality check loops.
-4. **Hierarchical Teams** (`langgraph_hierarchical_teams.ipynb`) — Teams of teams via subgraph composition when one supervisor isn't enough.
-5. **Collaboration Patterns** (`langgraph_collaboration_patterns.ipynb`) — Map-Reduce for parallel analysis, Debate for adversarial reasoning, Voting for group decisions.
-6. **Custom State Machines** (`langgraph_custom_state_machines.ipynb`) — Explicit lifecycle stages, multi-branch routing, retry/error recovery.
-7. **Human-in-the-Loop** (`langgraph_human_in_the_loop.ipynb`) — Approval gates, tool review, and collaborative human-AI editing.
+**Want to connect agents to external tools?** → walk the `mcp/` series 01–08. Builds the protocol from scratch, then ties it together with a real LLM.
 
-## What Each Notebook Covers
+**Want agents to talk to other agents?** → walk the `a2a/` series 01–08. Builds the protocol from scratch and closes with the official SDK.
 
-### LangGraph Notebook
-| Section | What You'll Learn |
-|---------|-------------------|
-| Setup | Install packages, configure API key |
-| Core Components | State, Nodes, Edges, Tools — the building blocks |
-| ReAct Agent | Build a single agent that reasons and uses tools in a loop |
-| Memory | Add conversation memory so the agent remembers past messages |
-| Multi-Agent Team | Build a Supervisor + Researcher + Writer team |
-
-### CrewAI Notebook
-| Section | What You'll Learn |
-|---------|-------------------|
-| Setup | Install packages, configure API key |
-| Core Components | Agents, Tasks, Crews, Processes — the building blocks |
-| Single Agent | Build one agent with a tool and run it |
-| Sequential Crew | Chain 3 agents: Researcher, Analyst, Writer |
-| Hierarchical Crew | Let a manager agent delegate tasks dynamically |
-| Custom Tools | Build your own tools with `@tool` and `BaseTool` |
-
-## Which Framework Should I Use?
+## CrewAI vs LangGraph
 
 | | CrewAI | LangGraph |
-|---|--------|-----------|
+|---|---|---|
 | **Best for** | Quick prototypes, role-based teams | Production systems, complex logic |
 | **Mental model** | A team of people with job titles | A flowchart with decision points |
 | **Control level** | High-level, opinionated | Low-level, flexible |
 | **Learning curve** | Gentle | Steeper |
 | **Setup time** | Minutes | More setup, more power |
 
+## MCP vs A2A
+
+| | MCP | A2A |
+|---|---|---|
+| **What it standardizes** | Agent → Tool communication | Agent → Agent communication |
+| **Typical client** | An LLM calling tools | Another agent (or a coordinator) |
+| **Typical server** | A tool exposing operations | An agent exposing skills |
+| **Transports** | stdio, HTTP | HTTP (JSON-RPC + SSE + webhooks) |
+| **Coexists with the other?** | Yes — an agent can expose A2A and consume MCP simultaneously |  |
+
 ## License
 
-This project is open source and available for learning purposes.
+Open source. Use for learning.
