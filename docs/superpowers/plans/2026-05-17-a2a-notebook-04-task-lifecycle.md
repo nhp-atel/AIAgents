@@ -503,19 +503,24 @@ def _handle_new_message(rpc_id, msg: Message) -> JSONRPCResponse:
         with STORE_LOCK:
             TASKS[task.id] = task
             TASK_HISTORY[task.id] = [msg]
-        return _ok(rpc_id, task)
+            snapshot = task.model_copy(deep=True)
+        return _ok(rpc_id, snapshot)
 
-    # Normal path: spawn a background worker.
+    # Normal path: spawn a background worker. Snapshot under the lock BEFORE
+    # starting the worker so the response reflects the initial 'submitted'
+    # state — otherwise the worker can mutate task.status to 'working' before
+    # model_dump runs and the client never sees 'submitted'.
     task = _new_task(msg, state="submitted")
     with STORE_LOCK:
         TASKS[task.id] = task
         TASK_HISTORY[task.id] = [msg]
         CANCEL_SIGNALS[task.id] = threading.Event()
+        snapshot = task.model_copy(deep=True)
 
     threading.Thread(
         target=_slow_worker, args=(task.id, topic), daemon=True,
     ).start()
-    return _ok(rpc_id, task)
+    return _ok(rpc_id, snapshot)
 
 
 def _handle_followup(rpc_id, msg: Message) -> JSONRPCResponse:
