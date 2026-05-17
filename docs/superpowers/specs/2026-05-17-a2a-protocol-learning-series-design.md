@@ -64,7 +64,7 @@ Every notebook is **runnable end-to-end** in Jupyter with no external infrastruc
 | Official A2A SDK | `a2a-sdk` (introduced only in notebook 08) |
 | LLM | Any (Claude or OpenAI), used **only** in notebook 08 |
 
-**Server execution pattern:** each notebook spins up its FastAPI server via a background `uvicorn.Server` running on a thread, bound to a fixed localhost port (8000 for the primary agent; 8001 for the secondary app in notebook 06's webhook receiver). A `shutdown()` cell at the bottom of each notebook stops the server cleanly.
+**Server execution pattern:** each notebook spins up its FastAPI server via a background `uvicorn.Server` running on a thread, bound to a fixed localhost port (`8010` for the primary agent; `8011` for the secondary app in notebook 06's webhook receiver). Ports `8000`/`8001` are avoided because the user runs an unrelated dev server there. A `shutdown()` cell at the bottom of each notebook stops the server cleanly.
 
 **No API keys for notebooks 01–07.** The "agents" are stub implementations that return canned responses. The focus is the protocol, not LLM reasoning. Only notebook 08 requires a real LLM API key.
 
@@ -126,7 +126,7 @@ This series targets the **current published A2A specification** at the time of w
 ### 07 — `07_a2a_auth.ipynb` — Authentication
 **Goal:** make any A2A endpoint authenticated.
 
-- The Agent Card's `authentication` field declares supported schemes.
+- The Agent Card's `securitySchemes` (OpenAPI-style scheme definitions) and `security` (required scheme combinations) fields declare supported authentication.
 - Cover three modes:
   - **No auth** (the implicit default in 01–06, now made explicit).
   - **Bearer token** — declared in card, sent as `Authorization: Bearer ...`, validated server-side.
