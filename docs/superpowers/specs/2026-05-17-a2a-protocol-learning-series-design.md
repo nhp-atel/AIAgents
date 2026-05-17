@@ -70,7 +70,7 @@ Every notebook is **runnable end-to-end** in Jupyter with no external infrastruc
 
 ## A2A spec version
 
-This series targets the **current published A2A specification** at the time of writing (Google's `google/A2A` repo, ~v0.2). Method names and message shapes match that spec (e.g., `message/send`, `tasks/get`, `tasks/cancel`, `message/stream`, `tasks/pushNotificationConfig/set`). Where the spec is still in flux, the notebook calls this out explicitly so the learner can update for newer versions.
+This series targets the **current published A2A specification** at the time of writing (Google's `google/A2A` repo, v0.3.0). Method names and message shapes match that spec (e.g., `message/send`, `tasks/get`, `tasks/cancel`, `message/stream`, `tasks/pushNotificationConfig/set`). The Agent Card lives at `/.well-known/agent-card.json` in v0.3.0 (earlier drafts used `/.well-known/agent.json` without the hyphen). Where the spec is still in flux, the notebook calls this out explicitly so the learner can update for newer versions.
 
 ## Notebooks
 
@@ -85,8 +85,8 @@ This series targets the **current published A2A specification** at the time of w
 ### 02 — `02_a2a_agent_card.ipynb` — Discovery
 **Goal:** introduce the Agent Card primitive.
 
-- Serve `/.well-known/agent.json` from a FastAPI endpoint.
-- The card includes: `name`, `description`, `url`, `version`, `capabilities`, `skills[]`, `authentication`.
+- Serve `/.well-known/agent-card.json` from a FastAPI endpoint.
+- The card includes: `protocolVersion`, `name`, `description`, `url`, `version`, `capabilities`, `defaultInputModes`, `defaultOutputModes`, `skills[]`, `securitySchemes`, `security`.
 - Client side: `httpx.get` the card, parse it into a `pydantic` model.
 - Compare to OpenAPI: similar idea, narrower scope, JSON Schema for skill inputs/outputs.
 
