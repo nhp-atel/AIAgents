@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build the second notebook in the A2A learning series — introduce the **Agent Card** primitive served at `/.well-known/agent.json`, the entry point for everything else in A2A. By the end the learner can build a card on the server side, fetch and parse it on the client side, and understand how this differs from (and complements) OpenAPI.
+**Goal:** Build the second notebook in the A2A learning series — introduce the **Agent Card** primitive served at `/.well-known/agent-card.json`, the entry point for everything else in A2A. By the end the learner can build a card on the server side, fetch and parse it on the client side, and understand how this differs from (and complements) OpenAPI.
 
-**Architecture:** A single Jupyter notebook that defines one FastAPI app (the researcher from notebook 01, now with an Agent Card endpoint). The researcher exposes `/.well-known/agent.json` returning a typed `AgentCard` object. The notebook then plays the role of an A2A *client*: `httpx.get` the card, parse it into the same pydantic model, iterate over its declared `skills[]`, and finally call FastAPI's `/openapi.json` for side-by-side contrast.
+**Architecture:** A single Jupyter notebook that defines one FastAPI app (the researcher from notebook 01, now with an Agent Card endpoint). The researcher exposes `/.well-known/agent-card.json` returning a typed `AgentCard` object. The notebook then plays the role of an A2A *client*: `httpx.get` the card, parse it into the same pydantic model, iterate over its declared `skills[]`, and finally call FastAPI's `/openapi.json` for side-by-side contrast.
 
 **Tech Stack:** Python 3.11+, Jupyter, FastAPI, uvicorn, httpx, pydantic v2, threading. Same stack as notebook 01.
 
@@ -98,9 +98,11 @@ Cell content (markdown):
 
 In **notebook 01** we built two services that talked to each other through hand-rolled REST. We watched that fall over the moment one side changed its contract — because there was no machine-readable description of either service. Consumers had no way to ask: *"what skills do you have, what inputs do you take, and how do I authenticate?"*
 
-A2A solves this with a single, simple primitive: the **Agent Card**. It's a JSON document served at a well-known URL (`/.well-known/agent.json`) that describes everything a client needs to know to start talking to an agent.
+A2A solves this with a single, simple primitive: the **Agent Card**. It's a JSON document served at a well-known URL (`/.well-known/agent-card.json`) that describes everything a client needs to know to start talking to an agent.
 
 This notebook builds an Agent Card for the researcher from notebook 01, fetches it from a client, and walks through what the card actually says.
+
+> *We target A2A spec v0.3.0 throughout. Earlier drafts of A2A used `/.well-known/agent.json` (no hyphen); the current spec uses `/.well-known/agent-card.json`.*
 ```
 
 - [ ] **Step 2: Add a markdown cell with "What you'll learn"**
@@ -110,8 +112,8 @@ Cell content (markdown):
 ```markdown
 ## What you'll learn
 
-- The shape of an A2A **Agent Card**: name, description, URL, capabilities, authentication, skills.
-- How to serve `/.well-known/agent.json` from a FastAPI app.
+- The shape of an A2A **Agent Card**: `protocolVersion`, `name`, `description`, `url`, `capabilities`, `securitySchemes`/`security`, `defaultInputModes`/`defaultOutputModes`, and `skills`.
+- How to serve `/.well-known/agent-card.json` from a FastAPI app.
 - How to discover an agent's capabilities from the client side using `httpx`.
 - How to parse a card into a typed `pydantic` model and iterate over its declared skills.
 - Why the Agent Card is **not** the same as OpenAPI, and what each is good for.
@@ -213,16 +215,16 @@ git commit -m "feat(a2a): add setup cell to notebook 02"
 ```markdown
 ## 2. What is an Agent Card?
 
-An Agent Card is a JSON document an agent **publishes about itself**. The A2A spec mandates it lives at the path `/.well-known/agent.json` on the agent's base URL — the same `/.well-known/` convention used by OAuth, OpenID Connect, Web App Manifests, and other web standards.
+An Agent Card is a JSON document an agent **publishes about itself**. The A2A spec mandates it lives at the path `/.well-known/agent-card.json` on the agent's base URL — the same `/.well-known/` convention used by OAuth, OpenID Connect, Web App Manifests, and other web standards.
 
 A minimal card answers four questions:
 
 | Question | Card field |
 |---|---|
-| *Who are you?* | `name`, `description`, `version` |
+| *Who are you?* | `name`, `description`, `version`, `protocolVersion` |
 | *Where do I send requests?* | `url` |
 | *What can you do?* | `capabilities`, `skills[]`, `defaultInputModes`, `defaultOutputModes` |
-| *How do I authenticate?* | `authentication.schemes[]` |
+| *How do I authenticate?* | `securitySchemes`, `security` (OpenAPI-style) |
 
 The card is **machine-readable** — a client fetches it once at the start of an interaction and can then make sensible decisions: "this agent supports streaming, so I'll use `message/stream` instead of `message/send`," or "this agent requires a bearer token, so I'll attach one."
 
@@ -254,11 +256,11 @@ git commit -m "feat(a2a): explain Agent Card concept in notebook 02"
 
 Now we build the server side. We'll:
 
-1. Define `pydantic` models matching the A2A card schema (the shapes are stable enough to type).
-2. Build a FastAPI app with one endpoint: `GET /.well-known/agent.json`.
+1. Define `pydantic` models matching the A2A v0.3.0 card schema.
+2. Build a FastAPI app with one endpoint: `GET /.well-known/agent-card.json`.
 3. Start it on `127.0.0.1:8010`.
 
-The card declares one skill — `research_topic` — corresponding to the researcher's only ability. It also declares **`authentication.schemes: ["none"]`** because we haven't introduced auth yet (notebook 07 will).
+The card declares one skill — `research_topic` — corresponding to the researcher's only ability. We leave `securitySchemes` and `security` empty for now (no auth required); notebook 07 will fill them in.
 ```
 
 - [ ] **Step 2: Add the models + app code cell**
@@ -270,10 +272,6 @@ class AgentCapabilities(BaseModel):
     stateTransitionHistory: bool = False
 
 
-class AgentAuthentication(BaseModel):
-    schemes: list[str] = Field(default_factory=lambda: ["none"])
-
-
 class AgentSkill(BaseModel):
     id: str
     name: str
@@ -283,15 +281,21 @@ class AgentSkill(BaseModel):
 
 
 class AgentCard(BaseModel):
+    # A2A spec v0.3.0. protocolVersion is optional with a default; defaultInputModes
+    # and defaultOutputModes are required; securitySchemes/security are optional
+    # (we leave them empty until notebook 07).
+    protocolVersion: str = "0.3.0"
     name: str
     description: str
     url: str
     version: str
     capabilities: AgentCapabilities = Field(default_factory=AgentCapabilities)
-    authentication: AgentAuthentication = Field(default_factory=AgentAuthentication)
     defaultInputModes: list[str] = Field(default_factory=lambda: ["text"])
     defaultOutputModes: list[str] = Field(default_factory=lambda: ["text"])
     skills: list[AgentSkill] = Field(default_factory=list)
+    # OpenAPI-style auth modeling. Both default to "no auth required."
+    securitySchemes: dict[str, dict] = Field(default_factory=dict)
+    security: list[dict[str, list[str]]] = Field(default_factory=list)
 
 
 researcher_app = FastAPI()
@@ -314,7 +318,7 @@ RESEARCHER_CARD = AgentCard(
 )
 
 
-@researcher_app.get("/.well-known/agent.json", response_model=AgentCard)
+@researcher_app.get("/.well-known/agent-card.json", response_model=AgentCard)
 def agent_card() -> AgentCard:
     return RESEARCHER_CARD
 
@@ -334,7 +338,7 @@ Researcher running on http://127.0.0.1:8010
 - [ ] **Step 4: Add a verification cell**
 
 ```python
-resp = httpx.get("http://127.0.0.1:8010/.well-known/agent.json")
+resp = httpx.get("http://127.0.0.1:8010/.well-known/agent-card.json")
 print(resp.status_code)
 print(json.dumps(resp.json(), indent=2))
 ```
@@ -346,6 +350,7 @@ Expected output:
 ```
 200
 {
+  "protocolVersion": "0.3.0",
   "name": "Researcher",
   "description": "Returns canned facts on a small set of well-known topics.",
   "url": "http://127.0.0.1:8010",
@@ -354,11 +359,6 @@ Expected output:
     "streaming": false,
     "pushNotifications": false,
     "stateTransitionHistory": false
-  },
-  "authentication": {
-    "schemes": [
-      "none"
-    ]
   },
   "defaultInputModes": [
     "text"
@@ -380,7 +380,9 @@ Expected output:
         "rome"
       ]
     }
-  ]
+  ],
+  "securitySchemes": {},
+  "security": []
 }
 ```
 
@@ -413,18 +415,18 @@ We'll parse the card back into the same `AgentCard` pydantic model we defined on
 ```python
 def discover_agent(base_url: str) -> AgentCard:
     """Fetch and parse an agent's card from its base URL."""
-    resp = httpx.get(f"{base_url.rstrip('/')}/.well-known/agent.json")
+    resp = httpx.get(f"{base_url.rstrip('/')}/.well-known/agent-card.json")
     resp.raise_for_status()
     return AgentCard.model_validate(resp.json())
 
 
 card = discover_agent("http://127.0.0.1:8010")
-print(f"Found agent: {card.name} (v{card.version})")
+print(f"Found agent: {card.name} (v{card.version}, protocol v{card.protocolVersion})")
 print(f"  Description: {card.description}")
 print(f"  Endpoint:    {card.url}")
-print(f"  Auth:        {card.authentication.schemes}")
 print(f"  Streaming?   {card.capabilities.streaming}")
 print(f"  # skills:    {len(card.skills)}")
+print(f"  Auth:        {'none' if not card.security else card.security}")
 ```
 
 - [ ] **Step 3: Run the cell and verify**
@@ -432,12 +434,12 @@ print(f"  # skills:    {len(card.skills)}")
 Expected output:
 
 ```
-Found agent: Researcher (v0.1.0)
+Found agent: Researcher (v0.1.0, protocol v0.3.0)
   Description: Returns canned facts on a small set of well-known topics.
   Endpoint:    http://127.0.0.1:8010
-  Auth:        ['none']
   Streaming?   False
   # skills:    1
+  Auth:        none
 ```
 
 - [ ] **Step 4: Commit**
@@ -513,9 +515,11 @@ The short answer: **they describe different things at different abstraction leve
 | **Describes** | HTTP routes, methods, request/response shapes | An agent's identity, capabilities, skills |
 | **Granularity** | Per-endpoint | Per-agent |
 | **Input model** | Typed per-route arguments | Free-form messages (text, files, data) |
-| **Auth model** | OpenAPI security schemes | A2A authentication schemes (subset by design) |
+| **Auth model** | `securitySchemes` + `security` (OpenAPI) | `securitySchemes` + `security` (A2A reuses OpenAPI's shape) |
 | **Audience** | Code generators, HTTP clients | Other agents (and the LLMs/runtimes driving them) |
-| **Discoverable at** | `/openapi.json` | `/.well-known/agent.json` |
+| **Discoverable at** | `/openapi.json` | `/.well-known/agent-card.json` |
+
+A2A deliberately borrows OpenAPI's security model verbatim — that's why this row reads identically on both sides. The rest of the card is its own thing.
 
 OpenAPI is great if you're writing a typed HTTP client. A2A is what an LLM-driven coordinator wants when it's asking *"is there an agent here, and what is it good for?"* In practice both can coexist on the same FastAPI app — and they do, right now, on this notebook's researcher.
 ```
@@ -541,7 +545,7 @@ Expected output (paths order may differ):
 
 ```
 OpenAPI describes routes:
-  GET    /.well-known/agent.json
+  GET    /.well-known/agent-card.json
 
 Agent Card describes one agent named 'Researcher'
 with 1 skill(s): ['research_topic']
@@ -566,8 +570,9 @@ git commit -m "feat(a2a): contrast Agent Card with OpenAPI in notebook 02"
 ```markdown
 ## What you just learned
 
-- The Agent Card is the entry point of A2A — a single JSON document at `/.well-known/agent.json` that describes an agent's identity, capabilities, authentication, and skills.
+- The Agent Card is the entry point of A2A — a single JSON document at `/.well-known/agent-card.json` that describes an agent's identity, capabilities, security, and skills.
 - The card is typed: a `pydantic` model on both sides keeps the shape stable.
+- A2A reuses OpenAPI's `securitySchemes` + `security` modeling — the auth story is OpenAPI, not a new invention.
 - A client only needs the agent's base URL to discover everything else.
 - Agent Card and OpenAPI describe **different things** at different abstraction levels — and they coexist happily.
 ```
