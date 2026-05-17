@@ -280,6 +280,8 @@ Key types:
 - [ ] **Step 2: Models code cell**
 
 ```python
+from pydantic import model_validator
+
 # A2A v0.3.0 valid task states.
 TaskState = Literal[
     "submitted",
@@ -303,7 +305,7 @@ class TextPart(BaseModel):
 class Message(BaseModel):
     messageId: str
     role: Literal["user", "agent"]
-    parts: list[TextPart]
+    parts: list[TextPart] = Field(..., min_length=1)
     kind: Literal["message"] = "message"
     taskId: str | None = None
     contextId: str | None = None
@@ -353,6 +355,14 @@ class JSONRPCResponse(BaseModel):
     id: str | int | None = None
     result: dict | None = None
     error: JSONRPCError | None = None
+
+    @model_validator(mode="after")
+    def _exactly_one(self) -> "JSONRPCResponse":
+        if (self.result is None) == (self.error is None):
+            raise ValueError(
+                "JSONRPCResponse must contain exactly one of `result` or `error`"
+            )
+        return self
 
 
 print("Models defined.")
@@ -442,7 +452,7 @@ def _failed_task_for(topic: str) -> Task:
     )
 
 
-@researcher_app.post("/")
+@researcher_app.post("/", response_model_exclude_none=True)
 def handle_jsonrpc(req: JSONRPCRequest) -> JSONRPCResponse:
     if req.method != "message/send":
         return JSONRPCResponse(
