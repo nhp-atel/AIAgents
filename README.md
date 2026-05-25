@@ -1,6 +1,6 @@
 # AI Agents — Learn to Build Intelligent Agent Systems
 
-A hands-on repo for learning **AI agents** — programs that reason, use tools, and collaborate to accomplish complex tasks autonomously. Organized as four progressive learning series, one per topic.
+A hands-on repo for learning **AI agents** — programs that reason, use tools, and collaborate to accomplish complex tasks autonomously. Organized as five progressive learning series, one per topic.
 
 ## Repository layout
 
@@ -9,7 +9,8 @@ A hands-on repo for learning **AI agents** — programs that reason, use tools, 
 ├── crewai/      Role-based agent teams (CrewAI)
 ├── langgraph/   Graph-based agents and advanced multi-agent patterns
 ├── mcp/         The Model Context Protocol from first principles
-└── a2a/         The Agent2Agent (A2A) protocol from first principles
+├── a2a/         The Agent2Agent (A2A) protocol from first principles
+└── evals/       Agent evaluation & observability from first principles
 ```
 
 Each folder is self-contained: notebooks build progressively from a "no-framework" baseline up to production-grade patterns, and a `docs/` subfolder (where applicable) holds longer-form guides.
@@ -95,11 +96,32 @@ Series design + per-notebook implementation plans live under `docs/superpowers/`
 
 ---
 
+## evals/ — Agent Evaluation & Observability
+
+A progressive series on how to know whether your agent actually works. It starts from why `assert agent(x) == expected` flakes, builds a deterministic grading harness and an LLM judge, adds a regression gate, then moves into LangSmith for tracing, experiments, and cost — closing with a full CI-style production eval gate.
+
+| Notebook | What you'll learn |
+|---|---|
+| [`evals/01_why_agents_are_hard_to_test.ipynb`](evals/01_why_agents_are_hard_to_test.ipynb) | Why `assert agent(x) == expected` flakes — non-determinism, multi-step failures, and the need for graded evaluation. |
+| [`evals/02_assertions_and_golden_outputs.ipynb`](evals/02_assertions_and_golden_outputs.ipynb) | Deterministic graders: `exact_match`, `make_contains`, `make_schema_grader` — cheap, reliable, no LLM needed. |
+| [`evals/03_building_an_eval_harness.ipynb`](evals/03_building_an_eval_harness.ipynb) | The eval harness: `Score`, `Example`, `EvalReport`, and `run_eval(agent, dataset, graders) → EvalReport`. |
+| [`evals/04_regression_testing.ipynb`](evals/04_regression_testing.ipynb) | The regression gate: `compare_reports` + `regression_gate` catch quality drops before they ship, entirely offline. |
+| [`evals/05_llm_as_judge.ipynb`](evals/05_llm_as_judge.ipynb) | `make_llm_judge` extends the harness to open-ended outputs with explicit rubrics; judge bias and calibration. |
+| [`evals/06_tracing_with_langsmith.ipynb`](evals/06_tracing_with_langsmith.ipynb) | LangSmith tracing makes multi-step agent runs visible — read spans, debug failures, observe cost and latency. |
+| [`evals/07_datasets_experiments_and_cost.ipynb`](evals/07_datasets_experiments_and_cost.ipynb) | LangSmith experiments: move the offline harness into the platform, compare runs across versions, track cost at scale. |
+| [`evals/08_production_eval_gate_end_to_end.ipynb`](evals/08_production_eval_gate_end_to_end.ipynb) | Capstone: full toolkit assembled into a CI-style production gate — mixed graders, regression gate, LangSmith experiment, online monitoring sketch. |
+
+**Keys:** notebooks 01–04 need no API key; 05–08 need `OPENAI_API_KEY`; 06–08 additionally need a free LangSmith account (`LANGCHAIN_API_KEY`). Notebooks that need LangSmith skip gracefully when the key is absent.
+
+Series design + per-notebook implementation plans live under `docs/superpowers/`.
+
+---
+
 ## Prerequisites
 
 - **Python 3.11+**
 - **Familiarity with LLM APIs** — you should know what a prompt, completion, and model are
-- **An API key** — OpenAI for the CrewAI/LangGraph notebooks; either OpenAI or Anthropic for the MCP and A2A series finales (notebooks `08_*`). The MCP and A2A series 01–07 require no API keys.
+- **An API key** — OpenAI for the CrewAI/LangGraph notebooks; either OpenAI or Anthropic for the MCP and A2A series finales (notebooks `08_*`). The MCP and A2A series 01–07 require no API keys. For the `evals/` series: 01–04 need no key, 05–08 need `OPENAI_API_KEY`, and 06–08 additionally need a free LangSmith account (`LANGCHAIN_API_KEY`).
 
 No prior experience with AI agents, LangChain, MCP, or A2A is required — each series starts from "no framework" and builds up.
 
@@ -123,6 +145,9 @@ No prior experience with AI agents, LangChain, MCP, or A2A is required — each 
    pip install fastapi 'uvicorn[standard]' httpx pydantic
    # Notebook 08 only:
    pip install 'a2a-sdk[http-server]==0.3.26'
+
+   # evals series
+   pip install langsmith langchain langchain-openai openai pydantic
    ```
 
 3. **Set your API key** (only needed for some notebooks)
@@ -130,6 +155,8 @@ No prior experience with AI agents, LangChain, MCP, or A2A is required — each 
    export OPENAI_API_KEY="your-key-here"
    # or
    export ANTHROPIC_API_KEY="your-key-here"
+   # evals/ notebooks 06–08 also use LangSmith (free account):
+   export LANGCHAIN_API_KEY="your-langsmith-key"
    ```
 
 4. **Open the first notebook of any series and start**
@@ -150,6 +177,8 @@ No prior experience with AI agents, LangChain, MCP, or A2A is required — each 
 **Want to connect agents to external tools?** → walk the `mcp/` series 01–08. Builds the protocol from scratch, then ties it together with a real LLM.
 
 **Want agents to talk to other agents?** → walk the `a2a/` series 01–08. Builds the protocol from scratch and closes with the official SDK.
+
+**Want to know if your agent works?** → walk the `evals/` series 01–08. Builds an evaluation harness, LLM judge, and regression gate from scratch, then wires it into LangSmith and a CI-style production gate.
 
 ## CrewAI vs LangGraph
 
